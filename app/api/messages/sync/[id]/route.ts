@@ -74,32 +74,6 @@ export async function POST(
 
         await connectDB();
 
-        // Require authentication
-        const token = getTokenFromRequest(request);
-        if (!token) {
-          return NextResponse.json(
-            { success: false, error: "Not authenticated" },
-            { status: 401 }
-          );
-        }
-
-        let decoded: any;
-        try {
-          decoded = verifyToken(token);
-        } catch {
-          return NextResponse.json(
-            { success: false, error: "Invalid or expired token" },
-            { status: 401 }
-          );
-        }
-
-        // Ensure the authenticated user matches the requested user ID
-        if (decoded.id !== userId) {
-          return NextResponse.json(
-            { success: false, error: "Forbidden" },
-            { status: 403 }
-          );
-        }
 
         // Check user
         const user = await User.findById(userId).select("_id");
