@@ -1,4 +1,3 @@
-// app/api/messages/sync/[id]/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
 
@@ -8,7 +7,8 @@ export async function POST(
 ) {
   try {
     const { id: userId } = await params;
-    const body = await request.json();
+
+    console.log("User ID:", userId);
 
     if (!userId) {
       return NextResponse.json(
@@ -17,17 +17,35 @@ export async function POST(
       );
     }
 
-    // Save message associated with this userId.
-    // Validate device authorization before saving.
+    let body;
+
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "Invalid JSON body" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Request body:", body);
 
     return NextResponse.json({
       success: true,
       userId,
       message: "Message received",
     });
-  } catch {
+  } catch (error) {
+    console.error("SMS SYNC ERROR:", error);
+
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Internal server error",
+      },
       { status: 500 }
     );
   }
