@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import SMS from "@/models/SMS";
-import { getTokenFromRequest, verifyToken } from "@/lib/auth";
 
 interface SMSRequest {
     deviceId: string;
@@ -97,7 +96,7 @@ export async function POST(
                     user: user._id,
                     deviceId: data.deviceId.trim(),
                     messageId: data.messageId.trim(),
-                    sender: data.sender,
+                    sender: data.sender.trim(),
                     body: data.body,
                     receivedAt,
                     simSlot: String(data.simSlot),

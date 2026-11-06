@@ -48,8 +48,7 @@ const SMSSchema = new Schema<ISMS>(
         },
         type: {
             type: String,
-            enum: ["inbox", "sent", "draft", "other"],
-            default: "inbox",
+            default:""
         },
     },
     {
