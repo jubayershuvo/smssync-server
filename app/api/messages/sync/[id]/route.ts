@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import SMS from "@/models/SMS";
+import { rethrowNext } from "@/lib/nextErrors";
 
 interface SMSRequest {
     deviceId: string;
@@ -75,12 +76,20 @@ export async function POST(
 
 
         // Check user
-        const user = await User.findById(userId).select("_id");
+        const user = await User.findById(userId).select("_id allowedDevices");
 
         if (!user) {
             return NextResponse.json(
                 { success: false, error: "User not found" },
                 { status: 404 }
+            );
+        }
+
+        // Only devices the user has allowed may sync
+        if (!user.allowedDevices.includes(data.deviceId.trim())) {
+            return NextResponse.json(
+                { success: false, error: "Device not allowed. Add this device ID in your dashboard." },
+                { status: 403 }
             );
         }
 
@@ -120,6 +129,7 @@ export async function POST(
         });
 
     } catch (error) {
+        rethrowNext(error);
         console.error("SMS SYNC ERROR:", error);
 
         return NextResponse.json(

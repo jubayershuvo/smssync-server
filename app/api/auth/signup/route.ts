@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { hashPassword, signToken } from "@/lib/auth";
+import { rethrowNext } from "@/lib/nextErrors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,6 +72,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    rethrowNext(error);
     console.error("SIGNUP ERROR:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

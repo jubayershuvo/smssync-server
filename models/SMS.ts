@@ -48,7 +48,7 @@ const SMSSchema = new Schema<ISMS>(
         },
         type: {
             type: String,
-            default:""
+            default: ""
         },
     },
     {
@@ -61,7 +61,25 @@ SMSSchema.index(
     { user: 1, deviceId: 1, messageId: 1 },
     { unique: true }
 );
+SMSSchema.index({ user: 1, receivedAt: -1 });
 
+SMSSchema.index({
+    user: 1,
+    deviceId: 1,
+    receivedAt: -1,
+});
+
+SMSSchema.index({
+    user: 1,
+    sender: 1,
+    receivedAt: -1,
+});
+
+SMSSchema.index({
+    user: 1,
+    type: 1,
+    receivedAt: -1,
+});
 const SMS: Model<ISMS> =
     mongoose.models.SMS ||
     mongoose.model<ISMS>("SMS", SMSSchema);

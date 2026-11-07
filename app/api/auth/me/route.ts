@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
 import { getTokenFromRequest, verifyToken } from "@/lib/auth";
+import { rethrowNext } from "@/lib/nextErrors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    rethrowNext(error);
     console.error("ME ERROR:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

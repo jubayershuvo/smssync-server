@@ -6,7 +6,8 @@ export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
-    
+    apiKey: string;
+    allowedDevices: string[];
 }
 
 const UserSchema = new Schema<IUser>(
@@ -35,6 +36,14 @@ const UserSchema = new Schema<IUser>(
             required: true,
             select: false,
         },
+        apiKey: {
+            type: String,
+            default: ""
+        },
+        allowedDevices: {
+            type: [String],
+            default: [],
+        }
     },
     {
         timestamps: true,

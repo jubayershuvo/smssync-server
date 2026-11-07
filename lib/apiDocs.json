@@ -1,0 +1,408 @@
+{
+ "base": "https://YOUR-DOMAIN",
+ "params": [
+  {
+   "group": "Filtering",
+   "items": [
+    {
+     "name": "q",
+     "type": "string",
+     "desc": "Advanced query — operators, quotes, negation (see Query syntax).",
+     "example": "q=from:bkash has:otp -promo after:2026-11-01"
+    },
+    {
+     "name": "search",
+     "type": "string",
+     "desc": "Simple global substring match over sender, body, deviceId, messageId.",
+     "example": "search=otp"
+    },
+    {
+     "name": "sender",
+     "type": "list",
+     "desc": "Exact sender(s), comma-separated.",
+     "example": "sender=bKash,Nagad"
+    },
+    {
+     "name": "senderNot",
+     "type": "list",
+     "desc": "Exclude exact sender(s).",
+     "example": "senderNot=Promo"
+    },
+    {
+     "name": "senderSearch",
+     "type": "string",
+     "desc": "Sender contains (case-insensitive).",
+     "example": "senderSearch=bank"
+    },
+    {
+     "name": "senderRegex",
+     "type": "regex",
+     "desc": "Sender matches regex (max 120 chars).",
+     "example": "senderRegex=^\\+880"
+    },
+    {
+     "name": "deviceId",
+     "type": "list",
+     "desc": "Only these device IDs.",
+     "example": "deviceId=pixel-7,redmi-9"
+    },
+    {
+     "name": "deviceNot",
+     "type": "list",
+     "desc": "Exclude device IDs.",
+     "example": "deviceNot=old-phone"
+    },
+    {
+     "name": "deviceSearch",
+     "type": "string",
+     "desc": "Device ID contains.",
+     "example": "deviceSearch=pixel"
+    },
+    {
+     "name": "type",
+     "type": "list",
+     "desc": "incoming and/or outgoing.",
+     "example": "type=incoming"
+    },
+    {
+     "name": "simSlot",
+     "type": "list",
+     "desc": "SIM slot(s).",
+     "example": "simSlot=0,1"
+    },
+    {
+     "name": "messageId",
+     "type": "list",
+     "desc": "Exact message ID(s).",
+     "example": "messageId=1042"
+    },
+    {
+     "name": "body / bodySearch",
+     "type": "string",
+     "desc": "Body contains.",
+     "example": "body=verification"
+    },
+    {
+     "name": "bodyNot",
+     "type": "string",
+     "desc": "Body must NOT contain.",
+     "example": "bodyNot=unsubscribe"
+    },
+    {
+     "name": "bodyRegex",
+     "type": "regex",
+     "desc": "Body matches regex (max 120 chars).",
+     "example": "bodyRegex=code\\s*\\d{6}"
+    },
+    {
+     "name": "phrase",
+     "type": "string",
+     "desc": "Exact phrase inside body.",
+     "example": "phrase=your code is"
+    },
+    {
+     "name": "has",
+     "type": "list",
+     "desc": "Body contains pattern: otp, link, digits, email, amount.",
+     "example": "has=otp,link"
+    },
+    {
+     "name": "minLength / maxLength",
+     "type": "int",
+     "desc": "Body length in characters.",
+     "example": "minLength=20&maxLength=160"
+    },
+    {
+     "name": "match",
+     "type": "all|any",
+     "desc": "How free-text terms in q combine. Default all.",
+     "example": "match=any"
+    }
+   ]
+  },
+  {
+   "group": "Dates",
+   "items": [
+    {
+     "name": "date",
+     "type": "date",
+     "desc": "Whole day (YYYY-MM-DD) in the given tz.",
+     "example": "date=2026-11-07"
+    },
+    {
+     "name": "from / to",
+     "type": "date",
+     "desc": "Inclusive range. YYYY-MM-DD or ISO 8601.",
+     "example": "from=2026-11-01&to=2026-11-07"
+    },
+    {
+     "name": "preset",
+     "type": "enum",
+     "desc": "last1h, last24h, last7d, last30d, today, yesterday, thisMonth.",
+     "example": "preset=last7d"
+    },
+    {
+     "name": "tz",
+     "type": "int",
+     "desc": "Client UTC offset in minutes (Bangladesh = 360). Affects day boundaries and group=day.",
+     "example": "tz=360"
+    }
+   ]
+  },
+  {
+   "group": "Output",
+   "items": [
+    {
+     "name": "sort",
+     "type": "enum",
+     "desc": "newest (default), oldest, asc, desc.",
+     "example": "sort=oldest"
+    },
+    {
+     "name": "sortBy",
+     "type": "enum",
+     "desc": "receivedAt (default), createdAt, sender, deviceId, type.",
+     "example": "sortBy=sender"
+    },
+    {
+     "name": "page / limit",
+     "type": "int",
+     "desc": "Offset pagination. limit max 500 (5000 for exports). Max offset 100,000.",
+     "example": "page=2&limit=100"
+    },
+    {
+     "name": "cursor",
+     "type": "string",
+     "desc": "Keyset pagination — pass pagination.nextCursor. Fast at any depth; needs sortBy=receivedAt.",
+     "example": "cursor=MTc2Mj…"
+    },
+    {
+     "name": "fields",
+     "type": "list",
+     "desc": "Projection. _id and receivedAt are always included.",
+     "example": "fields=sender,body,receivedAt"
+    },
+    {
+     "name": "highlight",
+     "type": "bool",
+     "desc": "Adds a highlight snippet with **matched** text to each result.",
+     "example": "highlight=true"
+    },
+    {
+     "name": "total",
+     "type": "bool",
+     "desc": "total=false skips the count query (faster on huge sets).",
+     "example": "total=false"
+    },
+    {
+     "name": "count",
+     "type": "bool",
+     "desc": "Return only {count}.",
+     "example": "count=true"
+    },
+    {
+     "name": "group",
+     "type": "enum",
+     "desc": "Aggregate instead of list: sender, deviceId, type, simSlot, day, hour, month.",
+     "example": "group=day&tz=360"
+    },
+    {
+     "name": "groupLimit",
+     "type": "int",
+     "desc": "Max groups (default 100, max 500).",
+     "example": "groupLimit=20"
+    },
+    {
+     "name": "format",
+     "type": "enum",
+     "desc": "json (default), csv, ndjson — file download.",
+     "example": "format=csv&limit=5000"
+    }
+   ]
+  }
+ ],
+ "operators": [
+  {
+   "op": "from:bank",
+   "desc": "Sender contains “bank”. Alias: sender:"
+  },
+  {
+   "op": "device:pixel-7",
+   "desc": "Device ID exactly matches"
+  },
+  {
+   "op": "type:incoming",
+   "desc": "incoming / outgoing"
+  },
+  {
+   "op": "sim:0",
+   "desc": "SIM slot"
+  },
+  {
+   "op": "id:1042",
+   "desc": "Message ID"
+  },
+  {
+   "op": "after:2026-11-01",
+   "desc": "On/after date or ISO time"
+  },
+  {
+   "op": "before:2026-11-07",
+   "desc": "Strictly before"
+  },
+  {
+   "op": "on:2026-11-07",
+   "desc": "Whole day"
+  },
+  {
+   "op": "has:otp",
+   "desc": "Contains otp / link / digits / email / amount"
+  },
+  {
+   "op": "body:invoice",
+   "desc": "Body contains"
+  },
+  {
+   "op": "\"your code\"",
+   "desc": "Exact phrase (sender or body)"
+  },
+  {
+   "op": "-promo",
+   "desc": "Exclude: works on words, phrases and any operator (-from:ads, -has:link, -type:outgoing)"
+  },
+  {
+   "op": "word1 word2",
+   "desc": "Free words are ANDed across sender+body (use match=any for OR)"
+  }
+ ],
+ "endpoints": [
+  {
+   "method": "GET",
+   "path": "/api/messages",
+   "title": "Search & list messages",
+   "desc": "The main endpoint. Combine any filters below. Results are always scoped to the API key’s account.",
+   "curl": "curl -G \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" \\\n  --data-urlencode 'q=from:bkash has:otp -promo' \\\n  -d preset=last7d -d tz=360 -d highlight=true -d limit=20",
+   "response": "{\n  \"success\": true,\n  \"data\": [\n    { \"_id\": \"6740…\", \"deviceId\": \"pixel-7\", \"sender\": \"bKash\",\n      \"body\": \"Your code is 482913\", \"receivedAt\": \"2026-11-07T08:12:00.000Z\",\n      \"simSlot\": \"0\", \"type\": \"incoming\",\n      \"highlight\": \"Your code is **482913**\" }\n  ],\n  \"pagination\": { \"total\": 1, \"page\": 1, \"limit\": 20, \"totalPages\": 1,\n                  \"hasNextPage\": false, \"hasPreviousPage\": false, \"nextCursor\": null },\n  \"meta\": { \"tookMs\": 12, \"sort\": { \"by\": \"receivedAt\", \"order\": \"desc\" },\n            \"query\": { \"text\": [], \"excluded\": [\"promo\"], \"conditions\": 4, \"tz\": 360 } }\n}"
+  },
+  {
+   "method": "GET",
+   "path": "/api/messages?count=true",
+   "title": "Count",
+   "desc": "Same filters, returns only the number of matches.",
+   "curl": "curl -G \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" -d count=true -d type=incoming -d preset=today",
+   "response": "{ \"success\": true, \"count\": 37, \"meta\": { \"tookMs\": 4, \"query\": { … } } }"
+  },
+  {
+   "method": "GET",
+   "path": "/api/messages?group=day",
+   "title": "Statistics / group-by",
+   "desc": "Aggregate matches by sender, deviceId, type, simSlot, day, hour or month.",
+   "curl": "curl -G \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" -d group=day -d tz=360 -d preset=last30d",
+   "response": "{\n  \"success\": true, \"group\": \"day\",\n  \"data\": [ { \"key\": \"2026-11-07\", \"count\": 41, \"incoming\": 35, \"outgoing\": 6,\n              \"first\": \"…\", \"last\": \"…\" } ]\n}"
+  },
+  {
+   "method": "GET",
+   "path": "/api/messages?format=csv",
+   "title": "Export",
+   "desc": "Download matches as CSV or NDJSON (up to 5000 rows per request; use cursor to continue). Cells starting with = + - @ are escaped.",
+   "curl": "curl -G \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" -d format=csv -d limit=5000 -d from=2026-11-01 -o sms.csv",
+   "response": "_id,deviceId,messageId,sender,body,receivedAt,simSlot,type\n6740…,pixel-7,1042,bKash,\"Your code is 482913\",2026-11-07T08:12:00.000Z,0,incoming"
+  },
+  {
+   "method": "POST",
+   "path": "/api/messages",
+   "title": "Search / count / delete with a JSON body",
+   "desc": "Use when filters are too long for a URL. Body: { action: \"search\" | \"count\" | \"delete\", filters?: {…} }. Filters may also sit at the top level. Arrays are accepted for list fields.",
+   "curl": "curl -X POST \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"action\":\"search\",\"filters\":{\"q\":\"has:otp\",\"deviceId\":[\"pixel-7\",\"redmi-9\"],\"preset\":\"last24h\"},\"limit\":10}'",
+   "response": "Same as GET /api/messages"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/messages",
+   "title": "Bulk delete",
+   "desc": "Delete everything matching the filters (query string and/or JSON body). Safety rails: (1) needs a filter, ids, or confirmAll:true; (2) dryRun:true previews without deleting; (3) more than 1000 matches returns 409 until you resend with confirmCount equal to the match count. Also accepts ids (Mongo _ids) and messageIds, up to 1000 each.",
+   "curl": "# preview first\ncurl -X DELETE \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"q\":\"from:promo before:2026-10-01\",\"dryRun\":true}'\n\n# then really delete\ncurl -X DELETE \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"q\":\"from:promo before:2026-10-01\"}'\n\n# by ids\ncurl -X DELETE \"https://YOUR-DOMAIN/api/messages\" -H \"Authorization: Bearer $API_KEY\" -H \"Content-Type: application/json\" \\\n  -d '{\"ids\":[\"6740aa…\",\"6740bb…\"]}'",
+   "response": "{ \"success\": true, \"matched\": 214, \"deletedCount\": 214 }\n\n// dry run\n{ \"success\": true, \"dryRun\": true, \"matched\": 214, \"sample\": [ … 5 messages … ] }\n\n// > 1000 matches\n{ \"success\": false, \"error\": \"This would delete 5230 messages. Repeat the request with confirmCount: 5230 to proceed.\", \"matched\": 5230, \"confirmCount\": 5230 }"
+  },
+  {
+   "method": "GET",
+   "path": "/api/messages/:id",
+   "title": "Get one message",
+   "desc": ":id is a Mongo _id or a messageId (add ?deviceId= to disambiguate messageIds).",
+   "curl": "curl \"https://YOUR-DOMAIN/api/messages/6740aa…\" -H \"Authorization: Bearer $API_KEY\"",
+   "response": "{ \"success\": true, \"data\": { \"_id\": \"6740aa…\", \"sender\": \"bKash\", … } }"
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/messages/:id",
+   "title": "Delete one message",
+   "desc": "Same :id rules as above.",
+   "curl": "curl -X DELETE \"https://YOUR-DOMAIN/api/messages/6740aa…\" -H \"Authorization: Bearer $API_KEY\"",
+   "response": "{ \"success\": true, \"deletedCount\": 1 }"
+  },
+  {
+   "method": "POST",
+   "path": "/api/messages/sync/:userId",
+   "title": "Device sync (used by the Android app)",
+   "desc": "No API key — the User ID identifies the account and the deviceId must be on the allowed list (403 otherwise). Duplicates are ignored.",
+   "curl": "curl -X POST \"https://YOUR-DOMAIN/api/messages/sync/USER_ID\" -H \"Content-Type: application/json\" \\\n  -d '{\"deviceId\":\"pixel-7\",\"messageId\":\"1042\",\"sender\":\"bKash\",\"body\":\"Your code is 482913\",\"receivedAt\":\"2026-11-07T08:12:00Z\",\"simSlot\":0,\"type\":\"incoming\"}'",
+   "response": "{ \"success\": true, \"inserted\": true, \"duplicate\": false }"
+  }
+ ],
+ "examples": [
+  {
+   "title": "All OTPs from the last 24h, any bank",
+   "query": "q=has:otp&preset=last24h&fields=sender,body,receivedAt"
+  },
+  {
+   "title": "Incoming SMS from two senders, excluding ads",
+   "query": "sender=bKash,Nagad&type=incoming&bodyNot=offer"
+  },
+  {
+   "title": "Messages containing a 6-digit code",
+   "query": "bodyRegex=(?<!\\d)\\d{6}(?!\\d)"
+  },
+  {
+   "title": "Anything with a link or amount, not from Promo",
+   "query": "q=-from:promo&has=link,amount&match=any"
+  },
+  {
+   "title": "Messages per hour today (Bangladesh time)",
+   "query": "group=hour&preset=today&tz=360"
+  },
+  {
+   "title": "Top senders this month",
+   "query": "group=sender&preset=thisMonth&groupLimit=10"
+  },
+  {
+   "title": "Page through everything fast",
+   "query": "limit=500&total=false → then cursor=<nextCursor>"
+  }
+ ],
+ "errors": [
+  {
+   "code": "400",
+   "desc": "Invalid filter / parameter (message explains which)"
+  },
+  {
+   "code": "401",
+   "desc": "Missing or invalid API key"
+  },
+  {
+   "code": "404",
+   "desc": "Message not found"
+  },
+  {
+   "code": "409",
+   "desc": "Large delete needs confirmCount"
+  },
+  {
+   "code": "429",
+   "desc": "Rate limit: 120 requests/minute per account — see X-RateLimit-* headers"
+  },
+  {
+   "code": "500",
+   "desc": "Server error"
+  }
+ ]
+}
