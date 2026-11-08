@@ -142,7 +142,7 @@ export default function Dashboard() {
       {/* Sidebar (desktop) */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.07] bg-[#070b14]/80 p-5 backdrop-blur lg:flex">
         <Link href="/" className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10"><MessageSquare className="h-5 w-5 text-cyan-400" /></div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/30 bg-cyan-400/10"><img src="./icon.png" alt="" /></div>
           <span className="text-lg font-bold">SMS<span className="text-cyan-400">Sync</span></span>
         </Link>
         <nav className="space-y-1">
