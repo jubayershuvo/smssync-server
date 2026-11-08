@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Activity, ArrowDownLeft, ArrowUpRight, Check, ChevronLeft, ChevronRight, Copy,
+  Activity, ArrowDownLeft, ArrowUpRight, Badge, Check, ChevronLeft, ChevronRight, Copy,
   Download, KeyRound, LayoutDashboard, LogOut, MessageSquare, Plug, Plus,
   RefreshCw, Search, Smartphone, Trash2, Users,
 } from "lucide-react";
@@ -112,7 +112,7 @@ export default function Dashboard() {
   };
 
   const copy = async (text: string, key: string) => {
-    try { await navigator.clipboard.writeText(text); } catch {}
+    try { await navigator.clipboard.writeText(text); } catch { }
     setCopied(key); say("Copied to clipboard");
     setTimeout(() => setCopied(""), 1500);
   };
@@ -349,6 +349,46 @@ export default function Dashboard() {
               </div>
               <button disabled={busy} onClick={() => { if (!apiKey || confirm("Rotate key? The old one stops working.")) act({ action: "rotate-api-key" }, "New API key generated"); }} className="mt-4 flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium transition hover:border-cyan-400/40 active:scale-95"><RefreshCw className="h-4 w-4" />{apiKey ? "Rotate key" : "Generate key"}</button>
               <Link href="/docs" className="ml-3 inline-block text-sm font-medium text-cyan-300 hover:underline">Read the API docs →</Link>
+            </section>
+            <section className={`${card} p-6`}>
+              <h2 className="flex items-center gap-2 font-semibold">
+                <Download className="h-4 w-4 text-cyan-300" />
+                Android application
+              </h2>
+
+              <p className="mt-1 text-sm text-slate-400">
+                Download and install the latest Android app on your device.
+              </p>
+
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/[0.07] bg-[#080f1c] p-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10">
+                  <Smartphone className="h-6 w-6 text-cyan-300" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-slate-200">SMS Sync for Android</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Latest version · APK · Android
+                  </p>
+                </div>
+
+                <Badge className="border border-emerald-400/20 bg-emerald-400/10 text-emerald-300">
+                  Available
+                </Badge>
+              </div>
+
+              <a
+                href="SMS_Sync.apk"
+                download
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-slate-950 transition hover:bg-cyan-300 active:scale-[0.98]"
+              >
+                <Download className="h-4 w-4" />
+                Download APK
+              </a>
+
+              <p className="mt-3 text-center text-xs text-slate-500">
+                Enable &quot;Install unknown apps&quot; if Android asks for permission.
+              </p>
             </section>
 
             <section className={`${card} p-6`}>
