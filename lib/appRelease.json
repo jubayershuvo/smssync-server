@@ -1,0 +1,11 @@
+{
+  "versionCode": 4,
+  "versionName": "1.3",
+  "apkPath": "/SMS_Sync.apk",
+  "mandatory": true,
+  "releasedAt": "2026-11-10",
+  "changelog": [
+    "In-app updates: the app now checks for new builds every time it opens",
+    "Messages now include the receiving number (receiver)"
+  ]
+}

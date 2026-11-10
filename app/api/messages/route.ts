@@ -9,8 +9,8 @@ import {
   int, list, paramsToInput, reply, snippet, str, tzString,
 } from "@/lib/smsQuery";
 
-const FIELDS = ["_id", "deviceId", "messageId", "sender", "body", "receivedAt", "simSlot", "type", "createdAt", "updatedAt"];
-const SORTS = ["receivedAt", "createdAt", "sender", "deviceId", "type"];
+const FIELDS = ["_id", "deviceId", "messageId", "sender", "receiver", "body", "receivedAt", "simSlot", "type", "createdAt", "updatedAt"];
+const SORTS = ["receivedAt", "createdAt", "sender", "receiver", "deviceId", "type"];
 type Auth = { userId: mongoose.Types.ObjectId; rl: RL };
 
 // ───────────────────────── search ─────────────────────────
@@ -32,7 +32,7 @@ async function search(auth: Auth, input: Input) {
   if (group) {
     const tz = tzString(parsed.tz);
     const G: Record<string, any> = {
-      sender: "$sender", deviceId: "$deviceId", type: "$type", simSlot: "$simSlot",
+      sender: "$sender", receiver: "$receiver", deviceId: "$deviceId", type: "$type", simSlot: "$simSlot",
       day: { $dateToString: { format: "%Y-%m-%d", date: "$receivedAt", timezone: tz } },
       hour: { $dateToString: { format: "%Y-%m-%d %H:00", date: "$receivedAt", timezone: tz } },
       month: { $dateToString: { format: "%Y-%m", date: "$receivedAt", timezone: tz } },
@@ -93,7 +93,7 @@ async function search(auth: Auth, input: Input) {
   ]);
 
   if (exporting) {
-    const cols = fieldList.length ? fieldList : ["_id", "deviceId", "messageId", "sender", "body", "receivedAt", "simSlot", "type"];
+    const cols = fieldList.length ? fieldList : ["_id", "deviceId", "messageId", "sender", "receiver", "body", "receivedAt", "simSlot", "type"];
     const stamp = new Date().toISOString().slice(0, 10);
     const text = format === "csv"
       ? [cols.join(","), ...rows.map((r: any) => cols.map((c) => csvCell(r[c])).join(","))].join("\n")
@@ -147,7 +147,7 @@ async function remove(auth: Auth, input: Input) {
   const matched = await SMS.countDocuments(filter);
 
   if (bool(input, "dryRun")) {
-    const sample = await SMS.find(filter).sort({ receivedAt: -1 }).limit(5).select("deviceId sender body receivedAt type").lean();
+    const sample = await SMS.find(filter).sort({ receivedAt: -1 }).limit(5).select("deviceId sender receiver body receivedAt type").lean();
     return reply({ success: true, dryRun: true, matched, sample, meta: { query: parsed } }, 200, auth.rl);
   }
 

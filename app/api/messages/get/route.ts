@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         id: sms._id,
         messageId: sms.messageId,
         sender: sms.sender,
+        receiver: sms.receiver,
         body: sms.body,
         receivedAt: sms.receivedAt,
         deviceId: sms.deviceId,

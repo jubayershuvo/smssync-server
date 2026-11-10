@@ -32,7 +32,7 @@ Response:
 {
   "success": true,
   "data": [
-    { "_id": "6740…", "deviceId": "pixel-7", "sender": "bKash",
+    { "_id": "6740…", "deviceId": "pixel-7", "sender": "bKash", "receiver": "+8801700000000",
       "body": "Your code is 482913", "receivedAt": "2026-11-07T08:12:00.000Z",
       "simSlot": "0", "type": "incoming",
       "highlight": "Your code is **482913**" }
@@ -60,7 +60,7 @@ Response:
 
 ### `GET /api/messages?group=day` — Statistics / group-by
 
-Aggregate matches by sender, deviceId, type, simSlot, day, hour or month.
+Aggregate matches by sender, receiver, deviceId, type, simSlot, day, hour or month.
 
 ```bash
 curl -G "https://YOUR-DOMAIN/api/messages" -H "Authorization: Bearer $API_KEY" -d group=day -d tz=360 -d preset=last30d
@@ -87,8 +87,8 @@ curl -G "https://YOUR-DOMAIN/api/messages" -H "Authorization: Bearer $API_KEY" -
 Response:
 
 ```json
-_id,deviceId,messageId,sender,body,receivedAt,simSlot,type
-6740…,pixel-7,1042,bKash,"Your code is 482913",2026-11-07T08:12:00.000Z,0,incoming
+_id,deviceId,messageId,sender,receiver,body,receivedAt,simSlot,type
+6740…,pixel-7,1042,bKash,+8801700000000,"Your code is 482913",2026-11-07T08:12:00.000Z,0,incoming
 ```
 
 ### `POST /api/messages` — Search / count / delete with a JSON body
@@ -150,7 +150,7 @@ curl "https://YOUR-DOMAIN/api/messages/6740aa…" -H "Authorization: Bearer $API
 Response:
 
 ```json
-{ "success": true, "data": { "_id": "6740aa…", "sender": "bKash", … } }
+{ "success": true, "data": { "_id": "6740aa…", "sender": "bKash", "receiver": "+8801700000000", … } }
 ```
 
 ### `DELETE /api/messages/:id` — Delete one message
@@ -169,17 +169,39 @@ Response:
 
 ### `POST /api/messages/sync/:userId` — Device sync (used by the Android app)
 
-No API key — the User ID identifies the account and the deviceId must be on the allowed list (403 otherwise). Duplicates are ignored.
+No API key — the User ID identifies the account and the deviceId must be on the allowed list (403 otherwise). Duplicates are ignored. `receiver` is the phone number (or SIM label) that received the message — required, send an empty string if unknown.
 
 ```bash
 curl -X POST "https://YOUR-DOMAIN/api/messages/sync/USER_ID" -H "Content-Type: application/json" \
-  -d '{"deviceId":"pixel-7","messageId":"1042","sender":"bKash","body":"Your code is 482913","receivedAt":"2026-11-07T08:12:00Z","simSlot":0,"type":"incoming"}'
+  -d '{"deviceId":"pixel-7","messageId":"1042","sender":"bKash","receiver":"+8801700000000","body":"Your code is 482913","receivedAt":"2026-11-07T08:12:00Z","simSlot":0,"type":"incoming"}'
 ```
 
 Response:
 
 ```json
 { "success": true, "inserted": true, "duplicate": false }
+```
+
+### `GET /api/app/version` — Latest Android build (public)
+
+No API key. The SMS Sync Android app calls this every time it opens; if `versionCode` is higher than the installed build it offers an in-app update (download with progress, then install).
+
+```bash
+curl "https://YOUR-DOMAIN/api/app/version"
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "versionCode": 4,
+  "versionName": "1.3",
+  "downloadUrl": "https://YOUR-DOMAIN/SMS_Sync.apk",
+  "mandatory": false,
+  "releasedAt": "2026-11-10",
+  "changelog": ["In-app updates", "Messages now include the receiving number"]
+}
 ```
 
 ## Parameters (GET /api/messages)
@@ -189,11 +211,15 @@ Response:
 | Param | Type | Description | Example |
 |---|---|---|---|
 | `q` | string | Advanced query — operators, quotes, negation (see Query syntax). | `q=from:bkash has:otp -promo after:2026-11-01` |
-| `search` | string | Simple global substring match over sender, body, deviceId, messageId. | `search=otp` |
+| `search` | string | Simple global substring match over sender, receiver, body, deviceId, messageId. | `search=otp` |
 | `sender` | list | Exact sender(s), comma-separated. | `sender=bKash,Nagad` |
 | `senderNot` | list | Exclude exact sender(s). | `senderNot=Promo` |
 | `senderSearch` | string | Sender contains (case-insensitive). | `senderSearch=bank` |
 | `senderRegex` | regex | Sender matches regex (max 120 chars). | `senderRegex=^\+880` |
+| `receiver` | list | Exact receiving number(s), comma-separated. | `receiver=+8801700000000` |
+| `receiverNot` | list | Exclude exact receiver(s). | `receiverNot=+8801800000000` |
+| `receiverSearch` | string | Receiver contains (case-insensitive). | `receiverSearch=1700` |
+| `receiverRegex` | regex | Receiver matches regex (max 120 chars). | `receiverRegex=^\+88017` |
 | `deviceId` | list | Only these device IDs. | `deviceId=pixel-7,redmi-9` |
 | `deviceNot` | list | Exclude device IDs. | `deviceNot=old-phone` |
 | `deviceSearch` | string | Device ID contains. | `deviceSearch=pixel` |
@@ -222,14 +248,14 @@ Response:
 | Param | Type | Description | Example |
 |---|---|---|---|
 | `sort` | enum | newest (default), oldest, asc, desc. | `sort=oldest` |
-| `sortBy` | enum | receivedAt (default), createdAt, sender, deviceId, type. | `sortBy=sender` |
+| `sortBy` | enum | receivedAt (default), createdAt, sender, receiver, deviceId, type. | `sortBy=sender` |
 | `page / limit` | int | Offset pagination. limit max 500 (5000 for exports). Max offset 100,000. | `page=2&limit=100` |
 | `cursor` | string | Keyset pagination — pass pagination.nextCursor. Fast at any depth; needs sortBy=receivedAt. | `cursor=MTc2Mj…` |
 | `fields` | list | Projection. _id and receivedAt are always included. | `fields=sender,body,receivedAt` |
 | `highlight` | bool | Adds a highlight snippet with **matched** text to each result. | `highlight=true` |
 | `total` | bool | total=false skips the count query (faster on huge sets). | `total=false` |
 | `count` | bool | Return only {count}. | `count=true` |
-| `group` | enum | Aggregate instead of list: sender, deviceId, type, simSlot, day, hour, month. | `group=day&tz=360` |
+| `group` | enum | Aggregate instead of list: sender, receiver, deviceId, type, simSlot, day, hour, month. | `group=day&tz=360` |
 | `groupLimit` | int | Max groups (default 100, max 500). | `groupLimit=20` |
 | `format` | enum | json (default), csv, ndjson — file download. | `format=csv&limit=5000` |
 
@@ -238,6 +264,7 @@ Response:
 | Token | Meaning |
 |---|---|
 | `from:bank` | Sender contains “bank”. Alias: sender: |
+| `to:+88017` | Receiver contains “+88017”. Alias: receiver: |
 | `device:pixel-7` | Device ID exactly matches |
 | `type:incoming` | incoming / outgoing |
 | `sim:0` | SIM slot |
@@ -262,6 +289,8 @@ Combine freely: `q=from:bank has:otp -promo after:2026-11-01 "your code"`. All c
 | Messages containing a 6-digit code | `bodyRegex=(?<!\d)\d{6}(?!\d)` |
 | Anything with a link or amount, not from Promo | `q=-from:promo&has=link,amount&match=any` |
 | Messages per hour today (Bangladesh time) | `group=hour&preset=today&tz=360` |
+| Messages received on one number | `receiver=+8801700000000&preset=last7d` |
+| Messages per receiving number | `group=receiver&preset=thisMonth` |
 | Top senders this month | `group=sender&preset=thisMonth&groupLimit=10` |
 | Page through everything fast | `limit=500&total=false → then cursor=<nextCursor>` |
 

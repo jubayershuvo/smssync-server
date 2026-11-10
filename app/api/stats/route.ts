@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     if (type === "incoming" || type === "outgoing") filter.type = type;
     if (q) {
       const rx = { $regex: q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" };
-      filter.$or = [{ sender: rx }, { body: rx }];
+      filter.$or = [{ sender: rx }, { receiver: rx }, { body: rx }];
     }
 
     const [totals, daily, byDevice, topSenders, messages, filteredTotal] = await Promise.all([

@@ -152,7 +152,7 @@ function presetRange(p: string, tz: number): [Date | null, Date | null] {
 }
 
 // ───────────────────────── the filter builder ─────────────────────────
-const OPS = new Set(["from", "sender", "device", "type", "sim", "id", "after", "before", "on", "has", "body"]);
+const OPS = new Set(["from", "sender", "to", "receiver", "device", "type", "sim", "id", "after", "before", "on", "has", "body"]);
 const TOKEN = /(-?)(?:([a-zA-Z]+):)?(?:"([^"]*)"|(\S+))/g;
 const TYPES = ["incoming", "outgoing"];
 
@@ -163,6 +163,8 @@ export function buildFilter(input: Input) {
   const L = {
     sender: list(input, "sender"), senderNot: list(input, "senderNot"),
     senderHas: [] as string[], senderHasNot: [] as string[],
+    receiver: list(input, "receiver"), receiverNot: list(input, "receiverNot"),
+    receiverHas: [] as string[], receiverHasNot: [] as string[],
     device: [...list(input, "deviceId"), ...list(input, "device")], deviceNot: list(input, "deviceNot"),
     type: list(input, "type"), typeNot: [] as string[],
     sim: [...list(input, "simSlot"), ...list(input, "sim")],
@@ -174,6 +176,7 @@ export function buildFilter(input: Input) {
   const ranges: Filter[] = [];
 
   const sb = str(input, "senderSearch"); if (sb) L.senderHas.push(sb);
+  const rb = str(input, "receiverSearch"); if (rb) L.receiverHas.push(rb);
   for (const k of ["body", "bodySearch"]) { const v = str(input, k); if (v) L.bodyHas.push(v); }
   const bn = str(input, "bodyNot"); if (bn) L.bodyNot.push(bn);
   const phrase = str(input, "phrase"); if (phrase) L.bodyHas.push(phrase);
@@ -191,6 +194,7 @@ export function buildFilter(input: Input) {
     if (!op) { textTerms.push({ v: val, neg }); continue; }
     switch (op) {
       case "from": case "sender": (neg ? L.senderHasNot : L.senderHas).push(val); break;
+      case "to": case "receiver": (neg ? L.receiverHasNot : L.receiverHas).push(val); break;
       case "device": (neg ? L.deviceNot : L.device).push(val); break;
       case "type": (neg ? L.typeNot : L.type).push(val.toLowerCase()); break;
       case "sim": L.sim.push(val); break;
@@ -205,6 +209,7 @@ export function buildFilter(input: Input) {
   const inList = (field: string, vals: string[], neg = false) => { if (vals.length) and.push({ [field]: { [neg ? "$nin" : "$in"]: vals } }); };
   for (const t of [...L.type, ...L.typeNot]) if (!TYPES.includes(t)) throw new ApiError(400, "type must be incoming or outgoing");
   inList("sender", L.sender); inList("sender", L.senderNot, true);
+  inList("receiver", L.receiver); inList("receiver", L.receiverNot, true);
   inList("deviceId", L.device); inList("deviceId", L.deviceNot, true);
   inList("type", L.type); inList("type", L.typeNot, true);
   inList("simSlot", L.sim); inList("messageId", L.messageId);
@@ -212,13 +217,16 @@ export function buildFilter(input: Input) {
   // ---- contains / regex ----
   for (const v of L.senderHas) and.push({ sender: ci(v) });
   for (const v of L.senderHasNot) and.push({ sender: { $not: ci(v) } });
+  for (const v of L.receiverHas) and.push({ receiver: ci(v) });
+  for (const v of L.receiverHasNot) and.push({ receiver: { $not: ci(v) } });
   for (const v of L.bodyHas) and.push({ body: ci(v) });
   for (const v of L.bodyNot) and.push({ body: { $not: ci(v) } });
   const ds = str(input, "deviceSearch"); if (ds) and.push({ deviceId: ci(ds) });
   const br = str(input, "bodyRegex"); if (br) and.push({ body: userRegex(br, "bodyRegex") });
   const sr = str(input, "senderRegex"); if (sr) and.push({ sender: userRegex(sr, "senderRegex") });
+  const rr = str(input, "receiverRegex"); if (rr) and.push({ receiver: userRegex(rr, "receiverRegex") });
   const gs = str(input, "search");
-  if (gs) { const r = ci(gs); and.push({ $or: [{ sender: r }, { body: r }, { deviceId: r }, { messageId: r }] }); }
+  if (gs) { const r = ci(gs); and.push({ $or: [{ sender: r }, { receiver: r }, { body: r }, { deviceId: r }, { messageId: r }] }); }
 
   for (const h of L.has) { if (!HAS[h]) throw new ApiError(400, `has must be one of: ${Object.keys(HAS).join(", ")}`); and.push({ body: HAS[h] }); }
   for (const h of L.hasNot) { if (!HAS[h]) throw new ApiError(400, `has must be one of: ${Object.keys(HAS).join(", ")}`); and.push({ body: { $not: HAS[h] } }); }
@@ -234,14 +242,14 @@ export function buildFilter(input: Input) {
   // ---- free-text terms (AND by default, OR with match=any) ----
   const pos = textTerms.filter((t) => !t.neg).map((t) => t.v);
   const neg = textTerms.filter((t) => t.neg).map((t) => t.v);
-  const termCond = (v: string) => ({ $or: [{ body: ci(v) }, { sender: ci(v) }] });
+  const termCond = (v: string) => ({ $or: [{ body: ci(v) }, { sender: ci(v) }, { receiver: ci(v) }] });
   if (pos.length) {
     const mode = str(input, "match") || "all";
     if (!["all", "any"].includes(mode)) throw new ApiError(400, "match must be all or any");
     if (mode === "any") and.push({ $or: pos.map(termCond) });
     else pos.forEach((v) => and.push(termCond(v)));
   }
-  neg.forEach((v) => and.push({ body: { $not: ci(v) }, sender: { $not: ci(v) } }));
+  neg.forEach((v) => and.push({ body: { $not: ci(v) }, sender: { $not: ci(v) }, receiver: { $not: ci(v) } }));
 
   // ---- dates ----
   const range = (field: "$gte" | "$gt" | "$lt" | "$lte", d: Date) => ranges.push({ receivedAt: { [field]: d } });
