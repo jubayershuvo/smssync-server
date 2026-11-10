@@ -11,6 +11,7 @@ interface SMSRequest {
     deviceId: string;
     messageId: string;
     sender: string;
+    receiver:string;
     body: string;
     receivedAt: string;
     simSlot: number;
@@ -52,6 +53,7 @@ export async function POST(
             typeof data.messageId !== "string" ||
             !data.messageId.trim() ||
             typeof data.sender !== "string" ||
+            typeof data.receiver !== "string" ||
             typeof data.body !== "string" ||
             typeof data.receivedAt !== "string" ||
             !Number.isInteger(data.simSlot) ||
@@ -106,6 +108,7 @@ export async function POST(
                     deviceId: data.deviceId.trim(),
                     messageId: data.messageId.trim(),
                     sender: data.sender.trim(),
+                    receiver:data.receiver.trim(),
                     body: data.body,
                     receivedAt,
                     simSlot: String(data.simSlot),

@@ -6,6 +6,7 @@ export interface ISMS extends Document {
     deviceId: string;
     messageId: string;
     sender: string;
+    receiver: string;
     body: string;
     receivedAt: Date;
     simSlot: string;
@@ -31,6 +32,10 @@ const SMSSchema = new Schema<ISMS>(
             trim: true,
         },
         sender: {
+            type: String,
+            default: "",
+        },
+        receiver: {
             type: String,
             default: "",
         },
@@ -72,6 +77,7 @@ SMSSchema.index({
 SMSSchema.index({
     user: 1,
     sender: 1,
+    receiver: 1,
     receivedAt: -1,
 });
 
