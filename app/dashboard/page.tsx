@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-type Msg = { _id: string; deviceId: string; sender: string; body: string; receivedAt: string; simSlot: string; type: string };
+type Msg = { _id: string; deviceId: string; sender: string; receiver: string; body: string; receivedAt: string; simSlot: string; type: string };
 type Stats = {
   totals: { total: number; incoming: number; outgoing: number; today: number; week: number; lastAt: string | null };
   series: { date: string; incoming: number; outgoing: number }[];
@@ -421,7 +421,7 @@ function MessageList({ msgs, loading }: { msgs: Msg[]; loading: boolean }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-3"><p className="truncate text-sm font-semibold">{m.sender || "Unknown"}</p><span className="shrink-0 text-xs text-slate-500">{ago(m.receivedAt)}</span></div>
             <p className="mt-0.5 line-clamp-2 break-words text-sm text-slate-400">{m.body}</p>
-            <p className="mt-1 truncate font-mono text-[10px] text-slate-600">{m.deviceId} · SIM {Number(m.simSlot) + 1 || "?"}</p>
+            <p className="mt-1 truncate font-mono text-[10px] text-slate-600">{m.deviceId} · {m.receiver} (SIM {Number(m.simSlot) + 1 || "?"})</p>
           </div>
         </li>
       ))}
